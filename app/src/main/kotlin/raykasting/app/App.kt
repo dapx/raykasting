@@ -4,12 +4,16 @@
 package raykasting.app
 
 import java.awt.Color
+import java.awt.Graphics
+import java.awt.Image
+import java.awt.image.BufferStrategy
 import java.awt.image.BufferedImage
-import java.awt.image.DataBufferInt
 import javax.swing.JFrame
 import kotlin.concurrent.thread
 
+
 fun main() {
+    val image = BufferedImage(640, 480, BufferedImage.TYPE_INT_RGB)
     thread {
         with(JFrame("example 3d engine")) {
             background = Color.BLACK
@@ -18,6 +22,40 @@ fun main() {
             defaultCloseOperation = JFrame.EXIT_ON_CLOSE
             setLocationRelativeTo(null)
             isVisible = true
+            run(image)
         }
     }.join()
 }
+
+fun JFrame.render(image: BufferedImage) {
+    val bufferStrategy: BufferStrategy = bufferStrategy ?: return createBufferStrategy(3)
+    val graphics = bufferStrategy.drawGraphics
+    graphics.drawImage(
+        image = image,
+        x = 0,
+        y = 0,
+        width = image.width,
+        height = image.height
+    )
+    bufferStrategy.show()
+}
+
+fun JFrame.run(image: BufferedImage) {
+    requestFocus()
+    var lastTime = System.nanoTime()
+    var delta = 0L
+    while (true) {
+        val now = System.nanoTime()
+        delta += ((now - lastTime) / 60.timesPerSecond)
+        lastTime = now
+        while (delta >= 1L) delta--
+        render(image)
+    }
+}
+
+fun Graphics.drawImage(image: Image, x: Int, y: Int, width: Int, height: Int): Boolean {
+    return this.drawImage(image, x, y, width, height, null)
+}
+
+val Int.nanoSeconds: Long get() = this * 1_000_000_000L
+val Int.timesPerSecond get() = 1.nanoSeconds / this
