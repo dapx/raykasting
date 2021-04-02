@@ -13,16 +13,24 @@ import kotlin.concurrent.thread
 
 
 fun main() {
-    val image = BufferedImage(640, 480, BufferedImage.TYPE_INT_RGB)
     thread {
-        with(JFrame("example 3d engine")) {
+        val camera = Camera()
+        val image = BufferedImage(640, 480, BufferedImage.TYPE_INT_RGB)
+
+        val window = JFrame("Example 3D Engine").apply {
             background = Color.BLACK
             isResizable = true
             setSize(640, 480)
             defaultCloseOperation = JFrame.EXIT_ON_CLOSE
             setLocationRelativeTo(null)
             isVisible = true
-            run(image)
+        }
+
+        with(window) {
+            addKeyListener(camera)
+            run(image) {
+                camera.update(map)
+            }
         }
     }.join()
 }
@@ -40,16 +48,26 @@ fun JFrame.render(image: BufferedImage) {
     bufferStrategy.show()
 }
 
-fun JFrame.run(image: BufferedImage) {
+fun JFrame.run(image: BufferedImage, execute: () -> Unit) {
     requestFocus()
     var lastTime = System.nanoTime()
-    var delta = 0L
-    while (true) {
+    var executionWindowsOverTime = 0L
+
+    loop {
         val now = System.nanoTime()
-        delta += ((now - lastTime) / 60.timesPerSecond)
+        executionWindowsOverTime += ((now - lastTime) / 60.timesPerSecond)
         lastTime = now
-        while (delta >= 1L) delta--
+        while (executionWindowsOverTime >= 1.executions) {
+            execute()
+            executionWindowsOverTime--
+        }
         render(image)
+    }
+}
+
+fun loop(block: () -> Unit) {
+    while (true) {
+        block()
     }
 }
 
@@ -59,3 +77,22 @@ fun Graphics.drawImage(image: Image, x: Int, y: Int, width: Int, height: Int): B
 
 val Int.nanoSeconds: Long get() = this * 1_000_000_000L
 val Int.timesPerSecond get() = 1.nanoSeconds / this
+val Int.executions get() = toLong()
+
+private val map = arrayOf(
+    intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2),
+    intArrayOf(1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2),
+    intArrayOf(1, 0, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 2),
+    intArrayOf(1, 0, 3, 0, 0, 0, 3, 0, 2, 0, 0, 0, 0, 0, 2),
+    intArrayOf(1, 0, 3, 0, 0, 0, 3, 0, 2, 2, 2, 0, 2, 2, 2),
+    intArrayOf(1, 0, 3, 0, 0, 0, 3, 0, 2, 0, 0, 0, 0, 0, 2),
+    intArrayOf(1, 0, 3, 3, 0, 3, 3, 0, 2, 0, 0, 0, 0, 0, 2),
+    intArrayOf(1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2),
+    intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 4, 4, 4, 0, 4, 4, 4),
+    intArrayOf(1, 0, 0, 0, 0, 0, 1, 4, 0, 0, 0, 0, 0, 0, 4),
+    intArrayOf(1, 0, 0, 0, 0, 0, 1, 4, 0, 0, 0, 0, 0, 0, 4),
+    intArrayOf(1, 0, 0, 2, 0, 0, 1, 4, 0, 3, 3, 3, 3, 0, 4),
+    intArrayOf(1, 0, 0, 0, 0, 0, 1, 4, 0, 3, 3, 3, 3, 0, 4),
+    intArrayOf(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4),
+    intArrayOf(1, 1, 1, 1, 1, 1, 1, 4, 4, 4, 4, 4, 4, 4, 4)
+)
