@@ -3,5 +3,21 @@
  */
 package raykasting.app
 
+import java.awt.Color
+import java.awt.image.BufferedImage
+import java.awt.image.DataBufferInt
+import javax.swing.JFrame
+import kotlin.concurrent.thread
+
 fun main() {
+    thread {
+        with(JFrame("example 3d engine")) {
+            background = Color.BLACK
+            isResizable = true
+            setSize(640, 480)
+            defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+            setLocationRelativeTo(null)
+            isVisible = true
+        }
+    }.join()
 }
