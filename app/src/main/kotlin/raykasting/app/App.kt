@@ -8,6 +8,7 @@ import java.awt.Graphics
 import java.awt.Image
 import java.awt.image.BufferStrategy
 import java.awt.image.BufferedImage
+import java.awt.image.DataBufferInt
 import javax.swing.JFrame
 import kotlin.concurrent.thread
 
@@ -16,6 +17,16 @@ fun main() {
     thread {
         val camera = Camera()
         val image = BufferedImage(640, 480, BufferedImage.TYPE_INT_RGB)
+        val pixels = (image.raster.dataBuffer as DataBufferInt).data
+
+        val textures = listOf(
+            Texture(inputStream = Resources.readAsStream("planks.png"), 64),
+            Texture(inputStream = Resources.readAsStream("brick.png"), 64),
+            Texture(inputStream = Resources.readAsStream("ice.png"), 64),
+            Texture(inputStream = Resources.readAsStream("stone.png"), 64)
+        )
+
+        val screen = Screen(map, textures, 640, 480)
 
         val window = JFrame("Example 3D Engine").apply {
             background = Color.BLACK
@@ -29,6 +40,7 @@ fun main() {
         with(window) {
             addKeyListener(camera)
             run(image) {
+                screen.update(camera, pixels)
                 camera.update(map)
             }
         }

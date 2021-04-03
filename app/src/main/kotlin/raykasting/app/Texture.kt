@@ -4,8 +4,8 @@ import java.awt.image.BufferedImage
 import java.io.InputStream
 import javax.imageio.ImageIO
 
-class Texture(private val inputStream: InputStream, size: Int) {
-    private val pixels = IntArray(size * size)
+class Texture(private val inputStream: InputStream, val size: Int) {
+    val pixels = IntArray(size * size)
     init { load() }
 
     private fun load() {
